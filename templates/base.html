@@ -70,12 +70,14 @@
                 return;
             }
             const userModule = '{{ user_status.user_module }}';
+            const isAdmin = {{ 'true' if user_status.is_admin else 'false' }};
+            
             if (userModule === 'LostLink') {
-                window.location.href = '/lostlink/logout';
+                window.location.href = isAdmin ? '/lostlink/admin/logout' : '/lostlink/app/logout';
             } else if (userModule === 'RGO') {
-                window.location.href = '/rgo/logout';
+                window.location.href = isAdmin ? '/rgo/admin/logout' : '/rgo/app/logout';
             } else if (userModule === 'Grievance') {
-                window.location.href = '/grievance/app/student-logout';
+                window.location.href = isAdmin ? '/grievance/app/admin-logout' : '/grievance/app/student-logout';
             } else {
                 window.location.href = '/';
             }
