@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}LostLink Module - BSU Smart Kiosk{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header kiosk-header text-white text-center">
+                    <h2><i class="fas fa-search"></i> LostLink Module</h2>
+                    <p class="mb-0">Lost and Found Management System</p>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center mb-3">
+                            <i class="fas fa-box fa-4x text-danger mb-3"></i>
+                            <h4>Report Lost Items</h4>
+                            <p>Upload photos and descriptions of items you've lost</p>
+                        </div>
+                        <div class="col-md-6 text-center mb-3">
+                            <i class="fas fa-check-circle fa-4x text-danger mb-3"></i>
+                            <h4>Find Your Items</h4>
+                            <p>Browse found items and claim what's yours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border border-danger-subtle">
+                        <strong><i class="fas fa-info-circle"></i> Features:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Upload photos of lost items</li>
+                            <li>Email notifications when items are found</li>
+                            <li>Admin dashboard for managing reports</li>
+                            <li>Track item status in real-time</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="/lostlink/app" class="btn btn-kiosk btn-lg me-2">
+                            <i class="fas fa-sign-in-alt"></i> Access LostLink
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

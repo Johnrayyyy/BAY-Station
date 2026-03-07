@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}RGO Module - BSU Smart Kiosk{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header kiosk-header text-white text-center">
+                    <h2><i class="fas fa-graduation-cap"></i> RGO Module</h2>
+                    <p class="mb-0">Records and Grade Office System</p>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center mb-3">
+                            <i class="fas fa-file-alt fa-4x text-danger mb-3"></i>
+                            <h4>Academic Records</h4>
+                            <p>View grades and request official documents</p>
+                        </div>
+                        <div class="col-md-6 text-center mb-3">
+                            <i class="fas fa-shopping-bag fa-4x text-danger mb-3"></i>
+                            <h4>Campus Store</h4>
+                            <p>Order merchandise and school supplies</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border border-danger-subtle">
+                        <strong><i class="fas fa-star"></i> Services:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Browse and order campus products</li>
+                            <li>Track order status</li>
+                            <li>Multiple payment methods (Cash/GCash)</li>
+                            <li>Staff dashboard for order management</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="/rgo/app" class="btn btn-kiosk btn-lg me-2">
+                            <i class="fas fa-sign-in-alt"></i> Access RGO
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

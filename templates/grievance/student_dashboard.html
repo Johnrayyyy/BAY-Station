@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Grievance{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-inbox"></i> My Concerns</h1>
+        <div>
+            <a href="{{ url_for('grievance.submit_concern') }}" class="btn btn-success me-2">+ New Concern</a>
+            <a href="{{ url_for('grievance.student_logout') }}" class="btn btn-outline-danger">Logout</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if concerns %}
+        <div class="row">
+            {% for concern in concerns %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="mb-0">{{ concern.subject }}</h5>
+                                <small class="text-muted">ID: #{{ concern.id }}</small>
+                            </div>
+                            <span class="badge bg-{{ 'danger' if concern.priority == 'high' else 'warning' if concern.priority == 'normal' else 'info' }}">
+                                {{ concern.priority|capitalize }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Category:</strong> <span class="badge bg-light text-dark">{{ concern.category }}</span></p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{{ 'warning' if concern.status == 'pending' else 'success' if concern.status == 'resolved' else 'info' }}">
+                                {{ concern.status|capitalize }}
+                            </span>
+                        </p>
+                        <p class="mb-0"><strong>Description:</strong></p>
+                        <p class="text-muted">{{ concern.description[:150] }}{{ '...' if concern.description|length > 150 else '' }}</p>
+                        <small class="text-muted">{{ concern.created_at.strftime('%m/%d/%Y %I:%M %p') }}</small>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#concernModal{{ concern.id }}">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Modal -->
+            <div class="modal fade" id="concernModal{{ concern.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Concern #{{ concern.id }}: {{ concern.subject }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Category:</strong> {{ concern.category }}</p>
+                            <p><strong>Priority:</strong> <span class="badge bg-{{ 'danger' if concern.priority == 'high' else 'warning' if concern.priority == 'normal' else 'info' }}">{{ concern.priority|capitalize }}</span></p>
+                            <p><strong>Status:</strong> <span class="badge bg-{{ 'warning' if concern.status == 'pending' else 'success' if concern.status == 'resolved' else 'info' }}">{{ concern.status|capitalize }}</span></p>
+                            <p><strong>Submitted:</strong> {{ concern.created_at.strftime('%m/%d/%Y %I:%M %p') }}</p>
+                            <hr>
+                            <p><strong>Description:</strong></p>
+                            <p>{{ concern.description }}</p>
+                            {% if concern.response %}
+                            <hr>
+                            <div class="alert alert-info">
+                                <strong>Admin Response:</strong>
+                                <p class="mb-0">{{ concern.response }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h5><i class="fas fa-info-circle"></i> No concerns submitted yet</h5>
+            <p>When you submit concerns, they will appear here for tracking.</p>
+            <a href="{{ url_for('grievance.submit_concern') }}" class="btn btn-primary">Submit Your First Concern</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

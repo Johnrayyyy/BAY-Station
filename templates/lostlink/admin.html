@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}LostLink Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-user-cog text-danger"></i> LostLink Admin</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('lostlink.returned') }}" class="btn btn-outline-danger">Returned Items</a>
+            <a href="{{ url_for('lostlink.logout') }}" class="btn btn-kiosk">Logout</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header kiosk-header text-white">Open Reports</div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>ID</th><th>Item</th><th>Place</th><th>Reporter</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>#{{ report.id }}</td>
+                        <td>{{ report.item }}</td>
+                        <td>{{ report.place }}</td>
+                        <td>{{ report.report_by or '-' }}</td>
+                        <td class="d-flex gap-1">
+                            <a class="btn btn-sm btn-outline-danger" href="{{ url_for('lostlink.returning', item_id=report.id) }}">Return</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('lostlink.update', item_id=report.id) }}">Edit</a>
+                            <form method="post" action="{{ url_for('lostlink.delete', item_id=report.id) }}" onsubmit="return confirm('Delete this report?');">
+                                <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No open reports.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light">Recently Returned</div>
+        <div class="card-body">
+            {% for item in returns %}
+                <span class="badge rounded-pill text-bg-light border me-2 mb-2">#{{ item.item_id }} {{ item.item_name }}</span>
+            {% else %}
+                <span class="text-muted">No returned items yet.</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Map{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-map-marked-alt text-success"></i> BSU Campus Map</h2>
+            <p class="text-muted">Interactive 3D map of Batangas State University - Lipa Campus</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-map"></i> Interactive Map</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map-container"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-search-location"></i> Quick Find</h5>
+                </div>
+                <div class="card-body">
+                    <input type="text" class="form-control mb-3" placeholder="Search location...">
+                    
+                    <div class="list-group">
+                        <button class="list-group-item list-group-item-action" onclick="alert('Navigation coming soon!')">
+                            <i class="fas fa-building text-primary"></i> Main Building
+                        </button>
+                        <button class="list-group-item list-group-item-action" onclick="alert('Navigation coming soon!')">
+                            <i class="fas fa-book text-info"></i> Library
+                        </button>
+                        <button class="list-group-item list-group-item-action" onclick="alert('Navigation coming soon!')">
+                            <i class="fas fa-flask text-success"></i> Science Lab
+                        </button>
+                        <button class="list-group-item list-group-item-action" onclick="alert('Navigation coming soon!')">
+                            <i class="fas fa-utensils text-warning"></i> Cafeteria
+                        </button>
+                        <button class="list-group-item list-group-item-action" onclick="alert('Navigation coming soon!')">
+                            <i class="fas fa-dumbbell text-danger"></i> Gymnasium
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-layer-group"></i> Map Layers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="buildingsLayer" checked>
+                        <label class="form-check-label" for="buildingsLayer">
+                            Buildings
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="pathwaysLayer" checked>
+                        <label class="form-check-label" for="pathwaysLayer">
+                            Pathways
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="parkingLayer">
+                        <label class="form-check-label" for="parkingLayer">
+                            Parking Areas
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="greenSpacesLayer">
+                        <label class="form-check-label" for="greenSpacesLayer">
+                            Green Spaces
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#map-container {
+    height: 600px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    position: relative;
+}
+
+#map-container::before {
+    content: "🗺️";
+    font-size: 5rem;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -80%);
+}
+
+#map-container::after {
+    content: "3D Campus Map - Coming Soon";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+}
+</style>
+
+<script>
+// Placeholder for 3D map initialization
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Map initialization will be implemented here');
+    // Future: Initialize Three.js or other 3D mapping library
+});
+</script>
+{% endblock %}

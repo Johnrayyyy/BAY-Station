@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Product - RGO Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Product</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/rgo/admin/product/{{ product.id }}/edit" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Product ID</strong></label>
+                            <input type="text" class="form-control" value="#{{ product.id }}" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label"><strong>Product Image</strong></label>
+                            {% if product.image_path %}
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename=product.image_path) }}" 
+                                     alt="{{ product.name }}" 
+                                     class="img-thumbnail" 
+                                     style="max-height: 200px; max-width: 300px;">
+                                <p class="text-muted small mt-1">Current image: {{ product.image_path.split('/')[-1] }}</p>
+                            </div>
+                            {% else %}
+                            <p class="text-muted small">No image uploaded yet</p>
+                            {% endif %}
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="text-muted">Upload a new image to replace the current one (JPG, PNG, GIF - Max 5MB)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label"><strong>Product Name</strong> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label"><strong>Description</strong></label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ product.description or '' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="price" class="form-label"><strong>Price (₱)</strong> <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₱</span>
+                                        <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" value="{{ product.price }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="stock_quantity" class="form-label"><strong>Stock Quantity</strong> <span class="text-danger">*</span></label>
+                                    <input type="number" min="0" class="form-control" id="stock_quantity" name="stock_quantity" value="{{ product.stock_quantity }}" required>
+                                    {% if product.stock_quantity < 5 %}
+                                    <small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Low stock alert!</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Status</strong></label>
+                            <div>
+                                {% if product.is_archived %}
+                                <span class="badge bg-secondary">Archived</span>
+                                <small class="text-muted ms-2">This product is currently archived</small>
+                                {% else %}
+                                <span class="badge bg-success">Active</span>
+                                <small class="text-muted ms-2">This product is available for purchase</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Created</strong></label>
+                            <input type="text" class="form-control" value="{{ product.created_at.strftime('%B %d, %Y at %I:%M %p') }}" disabled>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="/rgo/admin/products" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Actions -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-cog"></i> Additional Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="POST" action="/rgo/admin/product/{{ product.id }}/toggle-archive">
+                                {% if product.is_archived %}
+                                <button type="submit" class="btn btn-warning w-100" onclick="return confirm('Restore this product?');">
+                                    <i class="fas fa-undo"></i> Restore Product
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-secondary w-100" onclick="return confirm('Archive this product?');">
+                                    <i class="fas fa-archive"></i> Archive Product
+                                </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="POST" action="/rgo/admin/product/{{ product.id }}/delete">
+                                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Permanently delete this product? This cannot be undone.');">
+                                    <i class="fas fa-trash"></i> Delete Product
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

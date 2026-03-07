@@ -1,0 +1,117 @@
+:root {
+    --kiosk-red: #b00020;
+    --kiosk-red-dark: #7d0016;
+    --kiosk-red-soft: #f8d7dd;
+    --kiosk-white: #ffffff;
+    --kiosk-gray: #f6f6f7;
+}
+
+body {
+    background: linear-gradient(180deg, #fff 0%, #fff 55%, #f9f9fb 100%);
+    color: #1f1f21;
+}
+
+.navbar,
+.kiosk-header,
+.bg-primary {
+    background: linear-gradient(120deg, var(--kiosk-red) 0%, #d40029 100%) !important;
+}
+
+.footer-red {
+    background: var(--kiosk-red-dark);
+    color: var(--kiosk-white);
+}
+
+.btn-kiosk,
+.btn-primary,
+.btn-success,
+.btn-warning {
+    background-color: var(--kiosk-red) !important;
+    border-color: var(--kiosk-red) !important;
+    color: var(--kiosk-white) !important;
+}
+
+.btn-kiosk:hover,
+.btn-primary:hover,
+.btn-success:hover,
+.btn-warning:hover {
+    background-color: var(--kiosk-red-dark) !important;
+    border-color: var(--kiosk-red-dark) !important;
+}
+
+.btn-outline-danger,
+.btn-outline-secondary {
+    color: var(--kiosk-red);
+    border-color: var(--kiosk-red);
+}
+
+.btn-outline-danger:hover,
+.btn-outline-secondary:hover {
+    color: var(--kiosk-white);
+    background-color: var(--kiosk-red);
+    border-color: var(--kiosk-red);
+}
+
+.card {
+    border-radius: 0.9rem;
+}
+
+.card-header {
+    border-top-left-radius: 0.9rem !important;
+    border-top-right-radius: 0.9rem !important;
+}
+
+.kiosk-link {
+    color: var(--kiosk-red);
+    text-decoration: none;
+}
+
+.kiosk-link:hover {
+    text-decoration: underline;
+}
+
+.table thead th {
+    background-color: #fff3f5;
+    color: #670010;
+}
+
+.text-danger,
+.text-info,
+.text-success,
+.text-warning,
+.bg-info,
+.bg-success,
+.bg-warning,
+.bg-danger {
+    color: var(--kiosk-red) !important;
+}
+
+.bg-info,
+.bg-success,
+.bg-warning,
+.bg-danger {
+    background-color: #fff1f4 !important;
+    border: 1px solid #ffd4dd;
+}
+
+.badge.text-bg-warning,
+.badge.text-bg-success,
+.badge.text-bg-info,
+.badge.text-bg-danger {
+    background-color: #ffd7df !important;
+    color: #790014 !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.2);
+}
+
+.alert-info,
+.alert-success,
+.alert-warning {
+    background-color: #fff0f3;
+    border-color: #ffccd6;
+    color: #760014;
+}

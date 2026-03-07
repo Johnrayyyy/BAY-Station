@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Concern #{{ concern.id }} - Grievance{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Concern #{{ concern.id }}: {{ concern.subject }}</h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Student Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Student Information</h5>
+                            <p><strong>Name:</strong> {{ concern.student_name }}</p>
+                            <p><strong>Student ID:</strong> {{ concern.student_id }}</p>
+                            <p><strong>Email:</strong> {{ concern.student_email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Concern Details</h5>
+                            <p><strong>Category:</strong> {{ concern.category }}</p>
+                            <p><strong>Submitted:</strong> {{ concern.created_at.strftime('%m/%d/%Y %I:%M %p') }}</p>
+                            <p><strong>Current Status:</strong> <span class="badge bg-{{ 'warning' if concern.status == 'pending' else 'success' if concern.status == 'resolved' else 'info' }}">{{ concern.status|capitalize }}</span></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Concern Description -->
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <div class="bg-light p-3 rounded">
+                            {{ concern.description }}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Update Form -->
+                    <h5>Update Concern</h5>
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="pending" {% if concern.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="resolved" {% if concern.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" id="priority" name="priority" required>
+                                    <option value="low" {% if concern.priority == 'low' %}selected{% endif %}>Low</option>
+                                    <option value="normal" {% if concern.priority == 'normal' %}selected{% endif %}>Normal</option>
+                                    <option value="high" {% if concern.priority == 'high' %}selected{% endif %}>High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="response" class="form-label">Admin Response</label>
+                            <textarea class="form-control" id="response" name="response" rows="4" placeholder="Write your response or notes here...">{{ concern.response or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-warning">Update Concern</button>
+                                <a href="{{ url_for('grievance.admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Products - RGO Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-box"></i> Manage Products</h2>
+                <p class="text-muted">Add, edit, and manage RGO products inventory</p>
+            </div>
+            <div>
+                <a href="/rgo/admin/product/add" class="btn btn-primary me-2">
+                    <i class="fas fa-plus"></i> Add New Product
+                </a>
+                <a href="/rgo/admin/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Search Products</strong></label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Filter by Status</strong></label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="all">All Products</option>
+                        <option value="active">Active Only</option>
+                        <option value="archived">Archived Only</option>
+                        <option value="low-stock">Low Stock (< 5)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Sort By</strong></label>
+                    <select id="sortBy" class="form-control">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="name">Name A-Z</option>
+                        <option value="price-high">Price High-Low</option>
+                        <option value="price-low">Price Low-High</option>
+                        <option value="stock">Stock Level</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card shadow-sm">
+        {% if products %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="productsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr class="product-row" 
+                        data-name="{{ product.name.lower() }}" 
+                        data-status="{{ 'archived' if product.is_archived else 'active' }}"
+                        data-stock="{{ product.stock_quantity }}"
+                        data-price="{{ product.price }}"
+                        data-created="{{ product.created_at.timestamp() }}">
+                        <td><strong>#{{ product.id }}</strong></td>
+                        <td>
+                            <strong>{{ product.name }}</strong>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ product.description[:50] if product.description else 'No description' }}{{ '...' if product.description and product.description|length > 50 else '' }}</small>
+                        </td>
+                        <td>?{{ "%.2f"|format(product.price) }}</td>
+                        <td>
+                            {% if product.stock_quantity < 5 %}
+                            <span class="badge bg-danger">{{ product.stock_quantity }}</span>
+                            {% elif product.stock_quantity < 10 %}
+                            <span class="badge bg-warning">{{ product.stock_quantity }}</span>
+                            {% else %}
+                            <span class="badge bg-success">{{ product.stock_quantity }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if product.is_archived %}
+                            <span class="badge bg-secondary">Archived</span>
+                            {% else %}
+                            <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.created_at.strftime('%m/%d/%Y') }}</td>
+                        <td>
+                            <!-- Edit Button -->
+                            <a href="/rgo/admin/product/{{ product.id }}/edit" class="btn btn-sm btn-info" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+
+                            <!-- Archive/Restore Button -->
+                            <form method="POST" action="/rgo/admin/product/{{ product.id }}/toggle-archive" style="display:inline;">
+                                {% if product.is_archived %}
+                                <button type="submit" class="btn btn-sm btn-warning" title="Restore" onclick="return confirm('Restore this product?');">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-secondary" title="Archive" onclick="return confirm('Archive this product?');">
+                                    <i class="fas fa-archive"></i>
+                                </button>
+                                {% endif %}
+                            </form>
+
+                            <!-- Delete Button -->
+                            <form method="POST" action="/rgo/admin/product/{{ product.id }}/delete" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Permanently delete this product? This cannot be undone.');">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Footer -->
+        <div class="card-footer">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <strong>{{ products|length }}</strong>
+                    <p class="text-muted small">Total Products</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>{{ products|selectattr('is_archived', 'equalto', False)|list|length }}</strong>
+                    <p class="text-muted small">Active</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>{{ products|selectattr('is_archived', 'equalto', True)|list|length }}</strong>
+                    <p class="text-muted small">Archived</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>{{ products|selectattr('stock_quantity', 'lt', 5)|list|length }}</strong>
+                    <p class="text-muted small">Low Stock</p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card-body text-center py-5">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No products found. Start by adding your first product.</p>
+            <a href="/rgo/admin/product/add" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Product
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .product-row {
+        transition: background-color 0.3s ease;
+    }
+    
+    .product-row:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+// Search and Filter functionality
+document.getElementById('searchInput').addEventListener('keyup', filterProducts);
+document.getElementById('filterStatus').addEventListener('change', filterProducts);
+document.getElementById('sortBy').addEventListener('change', filterProducts);
+
+function filterProducts() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus').value;
+    const sortValue = document.getElementById('sortBy').value;
+    
+    const rows = Array.from(document.querySelectorAll('.product-row'));
+    
+    // Filter rows
+    rows.forEach(row => {
+        const name = row.dataset.name;
+        const status = row.dataset.status;
+        const stock = parseInt(row.dataset.stock);
+        
+        const matchesSearch = name.includes(searchValue);
+        let matchesStatus = true;
+        
+        if (statusFilter === 'active') {
+            matchesStatus = status === 'active';
+        } else if (statusFilter === 'archived') {
+            matchesStatus = status === 'archived';
+        } else if (statusFilter === 'low-stock') {
+            matchesStatus = stock < 5;
+        }
+        
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    });
+    
+    // Sort visible rows
+    const tbody = document.querySelector('#productsTable tbody');
+    const visibleRows = rows.filter(row => row.style.display !== 'none');
+    
+    visibleRows.sort((a, b) => {
+        switch(sortValue) {
+            case 'newest':
+                return parseFloat(b.dataset.created) - parseFloat(a.dataset.created);
+            case 'oldest':
+                return parseFloat(a.dataset.created) - parseFloat(b.dataset.created);
+            case 'name':
+                return a.dataset.name.localeCompare(b.dataset.name);
+            case 'price-high':
+                return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            case 'price-low':
+                return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            case 'stock':
+                return parseInt(a.dataset.stock) - parseInt(b.dataset.stock);
+            default:
+                return 0;
+        }
+    });
+    
+    // Re-append sorted rows
+    visibleRows.forEach(row => tbody.appendChild(row));
+}
+</script>
+{% endblock %}

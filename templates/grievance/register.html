@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Grievance Register{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header kiosk-header text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-plus"></i> Create Grievance Account</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="get" action="{{ url_for('grievance.student_dashboard') }}" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" required>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button class="btn btn-kiosk" type="submit">Register</button>
+                            <a class="btn btn-outline-danger" href="{{ url_for('grievance.login') }}">Back to Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-receipt text-danger"></i> My Orders</h2>
+        <a class="btn btn-outline-danger" href="{{ url_for('rgo.home') }}">Back to RGO</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>Order</th><th>Reference No.</th><th>Total</th><th>Status</th><th>Payment</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td><code>RGO-{{ order.created_at.strftime('%Y%m%d') if order.created_at else '00000000' }}-{{ '%06d'|format(order.id) }}</code></td>
+                        <td>PHP {{ order.total_amount }}</td>
+                        <td><span class="badge text-bg-light border">{{ order.status }}</span></td>
+                        <td>{{ order.payment.payment_method if order.payment else '-' }} / {{ order.payment.payment_status if order.payment else '-' }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">You have no orders yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}RGO Home{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <h2><i class="fas fa-graduation-cap text-danger"></i> RGO System</h2>
+            {% if current_user.is_authenticated %}
+            <small class="text-success"><i class="fas fa-check-circle"></i> Logged in as <strong>{{ current_user.name }}</strong></small>
+            {% else %}
+            <small class="text-muted"><i class="fas fa-info-circle"></i> Browsing as <strong>Guest</strong> - Login to place orders</small>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-danger" href="{{ url_for('rgo.products') }}">All Products</a>
+            {% if current_user.is_authenticated %}
+                {% if current_user.role == 'student' %}
+                <a class="btn btn-info" href="{{ url_for('rgo.my_orders') }}">My Orders</a>
+                {% endif %}
+                <a class="btn btn-outline-secondary" href="{{ url_for('rgo.logout') }}">Logout</a>
+            {% else %}
+                <a class="btn btn-kiosk" href="{{ url_for('rgo.login') }}">Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header kiosk-header text-white">Available Products</div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+                <tbody>
+                    {% for product in available %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>PHP {{ product.price }}</td>
+                        <td>{{ product.stock_quantity }}</td>
+                        <td>
+                            {% if current_user.is_authenticated and current_user.role == 'student' %}
+                            <a class="btn btn-sm btn-kiosk" href="{{ url_for('rgo.order_product', product_id=product.id) }}">Order</a>
+                            {% else %}
+                            <a class="btn btn-sm btn-outline-danger" href="{{ url_for('rgo.login') }}">Login to Order</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">No available products.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">Out of Stock</div>
+        <div class="card-body">
+            {% if out_of_stock %}
+                {% for product in out_of_stock %}
+                    <span class="badge rounded-pill text-bg-secondary me-2 mb-2">{{ product.name }}</span>
+                {% endfor %}
+            {% else %}
+                <p class="mb-0 text-muted">All listed products are currently available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

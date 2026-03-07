@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BSU Smart Kiosk{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Welcome Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card kiosk-header text-white">
+                <div class="card-body text-center">
+                    <h1><i class="fas fa-university"></i> Welcome to BAY-Station</h1>
+                    <p class="lead">Your one-stop solution for campus services</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white kiosk-header">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-search"></i> Lost Items</h5>
+                    <h2 id="lostItems">Loading...</h2>
+                    <p>Active reports</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white kiosk-header">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-shopping-cart"></i> RGO Requests</h5>
+                    <h2 id="rgoRequests">Loading...</h2>
+                    <p>Pending orders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white kiosk-header">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-comment"></i> Grievances</h5>
+                    <h2 id="grievances">Loading...</h2>
+                    <p>Open concerns</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white kiosk-header">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users"></i> Total Users</h5>
+                    <h2 id="totalUsers">Loading...</h2>
+                    <p>Registered</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-4x mb-3 text-danger"></i>
+                    <h3 class="card-title">LostLink</h3>
+                    <p class="card-text">Lost and Found</p>
+                    <a href="/lostlink/app" class="btn btn-kiosk btn-lg">Access LostLink</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-graduation-cap fa-4x mb-3 text-danger"></i>
+                    <h3 class="card-title">RGO System</h3>
+                    <p class="card-text">Campus merchandise orders and tracking</p>
+                    <a href="/rgo/app" class="btn btn-kiosk btn-lg">Access RGO</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-comment-dots fa-4x mb-3 text-danger"></i>
+                    <h3 class="card-title">Grievance System</h3>
+                    <p class="card-text">Submit and track student concerns</p>
+                    <a href="/grievance/app" class="btn btn-kiosk btn-lg">Access Grievance</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <div class="card">
+                <div class="card-header kiosk-header text-white">
+                    <h5><i class="fas fa-chart-line"></i> Module Activity</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card">
+                <div class="card-header kiosk-header text-white">
+                    <h5><i class="fas fa-list"></i> Recent Activities</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group" id="activityList">
+                        <li class="list-group-item">Loading activities...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fetch statistics
+fetch('/api/stats')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('lostItems').textContent = data.lostItems;
+        document.getElementById('rgoRequests').textContent = data.rgoRequests;
+        document.getElementById('grievances').textContent = data.grievances;
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+    })
+    .catch(err => console.error('Error fetching stats:', err));
+
+// Fetch and display activity chart
+fetch('/api/activity-data')
+    .then(res => res.json())
+    .then(data => {
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'LostLink',
+                        data: data.lostlink,
+                        borderColor: 'rgb(176, 0, 32)',
+                        backgroundColor: 'rgba(176, 0, 32, 0.08)'
+                    },
+                    {
+                        label: 'RGO',
+                        data: data.rgo,
+                        borderColor: 'rgb(220, 53, 69)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.08)'
+                    },
+                    {
+                        label: 'Grievance',
+                        data: data.grievance,
+                        borderColor: 'rgb(125, 0, 22)',
+                        backgroundColor: 'rgba(125, 0, 22, 0.08)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Monthly Activity Trends' }
+                }
+            }
+        });
+    });
+
+// Fetch recent activities
+fetch('/api/activities')
+    .then(res => res.json())
+    .then(data => {
+        const list = document.getElementById('activityList');
+        list.innerHTML = '';
+        data.forEach(activity => {
+            const item = document.createElement('li');
+            item.className = 'list-group-item';
+            item.innerHTML = `
+                <strong>${activity.module}</strong>: ${activity.activity}
+                <br><small class="text-muted">${activity.date} - ${activity.user}</small>
+                <span class="badge text-bg-light border border-danger text-danger float-end">${activity.status}</span>
+            `;
+            list.appendChild(item);
+        });
+    });
+</script>
+{% endblock %}
