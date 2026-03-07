@@ -13,23 +13,27 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-university"></i> BAY-Station
-            </a>
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-university"></i> BAY-Station
+                </a>
+            </div>
             
-            <!-- Login Status Badge -->
-            {% if current_user.is_authenticated %}
-            <span class="badge ms-2" style="background-color: #dc3545; color: white;">
-                <i class="fas fa-user-check"></i> {{ current_user.name }}
-            </span>
-            <a href="{{ url_for('rgo.logout') }}" class="btn btn-sm btn-outline-light ms-2">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-            {% else %}
-            <span class="badge bg-secondary ms-2">
-                <i class="fas fa-user"></i> Guest Mode
-            </span>
-            {% endif %}
+            <!-- User Status and Module Info -->
+            <div class="d-flex align-items-center ms-auto">
+                {% if user_status.is_logged_in %}
+                <span class="badge ms-2" style="background-color: #0d6efd; color: white; font-size: 0.8rem;">
+                    <i class="fas fa-user-check"></i> {{ user_status.user_name }} ({{ user_status.user_module }}){% if user_status.is_admin %} - Admin{% endif %}
+                </span>
+                <a href="#" onclick="performLogout(); return false;" class="btn btn-sm btn-outline-light ms-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                {% else %}
+                <span class="badge bg-secondary ms-2 d-none d-md-inline" style="font-size: 0.85rem;">
+                    <i class="fas fa-user"></i> Guest Mode
+                </span>
+                {% endif %}
+            </div>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -59,6 +63,24 @@
             </div>
         </div>
     </nav>
+    
+    <script>
+        function performLogout() {
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+            const userModule = '{{ user_status.user_module }}';
+            if (userModule === 'LostLink') {
+                window.location.href = '/lostlink/logout';
+            } else if (userModule === 'RGO') {
+                window.location.href = '/rgo/logout';
+            } else if (userModule === 'Grievance') {
+                window.location.href = '/grievance/app/student-logout';
+            } else {
+                window.location.href = '/';
+            }
+        }
+    </script>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}

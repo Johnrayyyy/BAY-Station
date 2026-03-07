@@ -291,6 +291,78 @@ except Exception as e:
     print(f"[ERROR] Grievance API routes failed: {e}")
 
 # ============================================================================
+# CONTEXT PROCESSOR - LOGIN/GUEST STATUS TRACKING
+# ============================================================================
+
+@app.context_processor
+def inject_user_status():
+    """Inject user login status into all templates"""
+    user_status = {
+        'is_logged_in': False,
+        'user_name': None,
+        'user_module': None,
+        'is_admin': False,
+        'is_guest': True
+    }
+    
+    # Check LostLink student login
+    if 'username' in session and 'sr_code' in session:
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = session.get('username')
+        user_status['user_module'] = 'LostLink'
+        user_status['is_admin'] = session.get('role') == 'admin'
+        return {'user_status': user_status}
+    
+    # Check LostLink admin login
+    if 'lostlink_admin_id' in session:
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = session.get('lostlink_admin_name', 'Admin')
+        user_status['user_module'] = 'LostLink'
+        user_status['is_admin'] = True
+        return {'user_status': user_status}
+    
+    # Check RGO user login (Flask-Login)
+    from flask_login import current_user
+    if current_user and current_user.is_authenticated:
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = current_user.name if hasattr(current_user, 'name') else str(current_user)
+        user_status['user_module'] = 'RGO'
+        user_status['is_admin'] = hasattr(current_user, 'role') and current_user.role in ('staff', 'admin')
+        return {'user_status': user_status}
+    
+    # Check RGO admin login
+    if 'rgo_admin_id' in session:
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = session.get('rgo_admin_name', 'Admin')
+        user_status['user_module'] = 'RGO'
+        user_status['is_admin'] = True
+        return {'user_status': user_status}
+    
+    # Check Grievance student login
+    if 'student_id' in session:
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = session.get('student_name')
+        user_status['user_module'] = 'Grievance'
+        user_status['is_admin'] = False
+        return {'user_status': user_status}
+    
+    # Check Grievance admin login
+    if 'admin_id' in session and session.get('admin_id'):
+        user_status['is_logged_in'] = True
+        user_status['is_guest'] = False
+        user_status['user_name'] = session.get('admin_name')
+        user_status['user_module'] = 'Grievance'
+        user_status['is_admin'] = True
+        return {'user_status': user_status}
+    
+    return {'user_status': user_status}
+
+# ============================================================================
 # ERROR HANDLERS
 # ============================================================================
 

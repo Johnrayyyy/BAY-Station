@@ -408,8 +408,7 @@ def admin_dashboard():
         return redirect(url_for('lostlink.admin_login'))
     
     try:
-        # Query all reports and returns from lostlink database
-        # Using db.session.query() ensures proper bind key connection
+        # Query all reports and returns from database with explicit bind_key
         total_reports = db.session.query(Report).count()
         total_returned = db.session.query(Return).count()
         recent_reports = db.session.query(Report).order_by(Report.timestamp.desc()).limit(10).all()
@@ -436,9 +435,7 @@ def admin_dashboard():
         return render_template('lostlink/admin_dashboard.html', stats=stats, admin_name=session.get('lostlink_admin_name'), title='Admin Dashboard')
     except Exception as e:
         # Log error and return default stats
-        import traceback
         print(f"Dashboard Error: {str(e)}")
-        print(traceback.format_exc())
         flash('Error loading dashboard data. Showing default values.', 'warning')
         stats = {
             'total_reports': 0,
