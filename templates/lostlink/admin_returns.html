@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}View Returns - LostLink Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-undo"></i> Returned Items</h2>
+                <p class="text-muted">History of items claimed and returned to owners</p>
+            </div>
+            <a href="/lostlink/admin/dashboard" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Search by Item Name</strong></label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search items...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Search by Claimant</strong></label>
+                    <input type="text" id="filterClaimant" class="form-control" placeholder="Search claimant...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Date Range</strong></label>
+                    <input type="date" id="filterDate" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Returns Table -->
+    <div class="card shadow-sm">
+        {% if returns %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="returnsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Item Name</th>
+                        <th>Location Found</th>
+                        <th>Claimed By</th>
+                        <th>Contact</th>
+                        <th>Date Claimed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for returned in returns %}
+                    <tr class="return-row" 
+                        data-item="{{ returned.item_name.lower() }}" 
+                        data-claimant="{{ returned.claimed_by.lower() }}"
+                        data-date="{{ returned.timestamp_claimed.strftime('%Y-%m-%d') }}">
+                        <td><strong>#{{ returned.id }}</strong></td>
+                        <td>
+                            <strong class="item-name">{{ returned.item_name }}</strong>
+                        </td>
+                        <td>{{ returned.place_found }}</td>
+                        <td>{{ returned.claimed_by }}</td>
+                        <td>
+                            <a href="tel:{{ returned.contact }}" class="text-primary">
+                                {{ returned.contact }}
+                            </a>
+                        </td>
+                        <td>{{ returned.timestamp_claimed.strftime('%m/%d/%Y %H:%M') }}</td>
+                        <td>
+                            <!-- View Details Modal Button -->
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#returnModal{{ returned.id }}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                            <!-- Delete Button -->
+                            <form method="POST" action="/lostlink/admin/return/{{ returned.id }}/delete" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this return record?');">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- View Details Modal -->
+                    <div class="modal fade" id="returnModal{{ returned.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">Return Details - {{ returned.item_name }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% if returned.photo %}
+                                    <div class="mb-3">
+                                        <img src="/static/uploads/{{ returned.photo }}" class="img-fluid rounded" alt="{{ returned.item_name }}">
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p><strong>Item:</strong></p>
+                                            <p>{{ returned.item_name }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Location Found:</strong></p>
+                                            <p>{{ returned.place_found }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p><strong>Claimed By:</strong></p>
+                                            <p>{{ returned.claimed_by }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Contact:</strong></p>
+                                            <p>
+                                                <a href="tel:{{ returned.contact }}">{{ returned.contact }}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <p><strong>Email:</strong></p>
+                                    <p>{{ returned.email or 'Not provided' }}</p>
+
+                                    <p><strong>Date Claimed:</strong></p>
+                                    <p>{{ returned.timestamp_claimed.strftime('%b %d, %Y at %I:%M %p') }}</p>
+
+                                    <p><strong>Description:</strong></p>
+                                    <p class="text-muted">{{ returned.description or 'No description provided' }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card-body text-center py-5">
+            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No returned items yet. Items will appear here when owners claim their lost items.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Summary -->
+    {% if returns %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h4 class="text-success">{{ returns|length }}</h4>
+                    <p class="text-muted small">Total Items Returned</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h4 class="text-info">{{ returns|unique(attribute='claimed_by')|list|length }}</h4>
+                    <p class="text-muted small">Unique Claimants</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p class="text-muted small"><strong>Latest Return:</strong></p>
+                    <p>{{ (returns|sort(attribute='timestamp_claimed', reverse=True)|first).claimed_by }} claimed {{ (returns|sort(attribute='timestamp_claimed', reverse=True)|first).item_name }}</p>
+                    <p class="text-muted small">{{ (returns|sort(attribute='timestamp_claimed', reverse=True)|first).timestamp_claimed.strftime('%b %d, %Y') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .return-row {
+        transition: background-color 0.3s ease;
+    }
+    
+    .return-row:hover {
+        background-color: #f0f9ff;
+    }
+</style>
+
+<script>
+// Search and Filter functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    filterReturns();
+});
+
+document.getElementById('filterClaimant').addEventListener('keyup', function() {
+    filterReturns();
+});
+
+document.getElementById('filterDate').addEventListener('change', function() {
+    filterReturns();
+});
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toISOString().split('T')[0];
+}
+
+function filterReturns() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const claimantValue = document.getElementById('filterClaimant').value.toLowerCase();
+    const dateValue = document.getElementById('filterDate').value;
+    
+    const rows = document.querySelectorAll('.return-row');
+    
+    rows.forEach(row => {
+        const itemName = row.dataset.item;
+        const claimant = row.dataset.claimant;
+        const date = row.dataset.date;
+        
+        const matchesSearch = itemName.includes(searchValue);
+        const matchesClaimant = claimantValue === '' || claimant.includes(claimantValue);
+        const matchesDate = dateValue === '' || date === dateValue;
+        
+        row.style.display = (matchesSearch && matchesClaimant && matchesDate) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

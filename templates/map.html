@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Navigation - BAY-Station{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-page-container {
+        padding: 0 3rem 5rem 3rem;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--glass-white-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        padding: 1.75rem 2.5rem;
+        border-radius: var(--bay-border-radius-lg);
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--bay-red-primary);
+        margin-bottom: 0.5rem;
+        text-align: left;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: var(--bay-gray);
+        text-align: left;
+    }
+    
+    .map-layout {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+        margin-bottom: 100px;
+    }
+    
+    .map-main {
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border-radius: var(--bay-border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+        position: relative;
+    }
+    
+    .map-header-full {
+        background: var(--bay-red-gradient-soft);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: var(--bay-white);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        border-radius: var(--bay-border-radius-lg) var(--bay-border-radius-lg) 0 0;
+    }
+        align-items: center;
+    }
+    
+    .map-floating-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 12px;
+        z-index: 100;
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        padding: 8px;
+        border-radius: var(--bay-border-radius-lg);
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+        animation: floatIn 0.5s ease-out;
+    }
+    
+    @keyframes floatIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .map-control-btn {
+        background: var(--glass-white-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 2px solid var(--glass-border);
+        color: var(--bay-red-primary);
+        padding: 0.65rem 1.25rem;
+        border-radius: var(--bay-border-radius);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .map-control-btn:hover {
+        background: var(--bay-red-gradient);
+        color: var(--bay-white);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 24px rgba(220, 20, 60, 0.3);
+        border-color: transparent;
+    }
+    
+    .map-control-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .map-control-btn i {
+        font-size: 0.95rem;
+    }
+    
+    #map-container {
+        height: 700px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        border-radius: 0 0 var(--bay-border-radius-lg) var(--bay-border-radius-lg);
+    }
+    
+    .map-building-full {
+        position: absolute;
+        background: var(--glass-white-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border-radius: var(--bay-border-radius-lg);
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: var(--bay-transition);
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+        animation: buildingPop 0.6s ease-out backwards;
+    }
+    
+    @keyframes buildingPop {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        70% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .map-building-full:hover {
+        transform: scale(1.15);
+        box-shadow: 0 12px 48px rgba(220, 20, 60, 0.3);
+        border-color: var(--bay-red-primary);
+        z-index: 10;
+    }
+    
+    .building-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .building-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--bay-gray-dark);
+    }
+    
+    .map-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .sidebar-card {
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border-radius: var(--bay-border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+    }
+    
+    .sidebar-card-header {
+        background: var(--bay-red-gradient-soft);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: var(--bay-white);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: var(--bay-border-radius-lg) var(--bay-border-radius-lg) 0 0;
+    }
+    
+    .sidebar-card-body {
+        padding: 1.5rem;
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--glass-border);
+        border-radius: var(--bay-border-radius);
+        font-size: 1rem;
+        transition: var(--bay-transition);
+        background: var(--glass-white-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--bay-red-primary);
+        box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+    }
+    
+    .location-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .location-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border-radius: var(--bay-border-radius);
+        cursor: pointer;
+        transition: var(--bay-transition);
+        border: 2px solid var(--glass-border);
+    }
+    
+    .location-item:hover {
+        background: var(--bay-red-gradient);
+        color: var(--bay-white);
+        border-color: var(--bay-red-primary);
+        transform: translateX(8px);
+    }
+    
+    .location-icon {
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bay-white);
+        border-radius: 50%;
+        transition: var(--bay-transition);
+    }
+    
+    .location-item:hover .location-icon {
+        transform: rotate(360deg);
+    }
+    
+    .location-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    
+    .layer-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--bay-offwhite);
+        border-radius: var(--bay-border-radius-sm);
+        cursor: pointer;
+        transition: var(--bay-transition);
+    }
+    
+    .layer-option:hover {
+        background: var(--bay-gray-light);
+    }
+    
+    .layer-checkbox {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--bay-red-primary);
+        cursor: pointer;
+    }
+    
+    .layer-label {
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: var(--bay-gray-dark);
+        cursor: pointer;
+    }
+    
+    @media (max-width: 1024px) {
+        .map-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .map-sidebar {
+            order: -1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fas fa-map-marked-alt"></i> Campus Navigation</h1>
+            <p class="page-subtitle">Interactive 3D map of Batangas State University - Lipa Campus</p>
+        </div>
+        <a href="/" class="btn-kiosk" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+    </div>
+    
+    <div class="map-layout">
+        <!-- Main Map -->
+        <div class="map-main">
+            <div class="map-header-full">
+                <div>
+                    <i class="fas fa-map"></i> <strong>Campus Navigation</strong>
+                </div>
+            </div>
+            <div id="map-container">
+                <!-- Floating Control Buttons -->
+                <div class="map-floating-controls">
+                    <button class="map-control-btn" onclick="resetMapView()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button class="map-control-btn" onclick="toggleFullscreen()">
+                        <i class="fas fa-expand"></i> Fullscreen
+                    </button>
+                </div>
+                <div style="text-align: center; color: var(--bay-gray);">
+                    <div style="font-size: 6rem; color: var(--bay-red-light); opacity: 0.3; animation: float 3s ease-in-out infinite; margin-bottom: 1rem;">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h3 style="color: var(--bay-gray-dark); font-weight: 700; margin-bottom: 0.5rem;">BSU Lipa Campus</h3>
+                    <p style="color: var(--bay-gray); font-size: 1.1rem;">Interactive 3D Campus Map</p>
+                    <p style="color: var(--bay-gray); font-size: 0.9rem; margin-top: 1rem;">Click on buildings to view information</p>
+                    
+                    <!-- Interactive Building Markers -->
+                    <div class="map-building-full" style="top: 20%; left: 15%; animation-delay: 0.1s;" onclick="selectLocation('Main Building')">
+                        <div class="building-icon" style="color: var(--bay-red-primary);">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="building-name">Main Building</div>
+                    </div>
+                    
+                    <div class="map-building-full" style="top: 25%; left: 50%; animation-delay: 0.2s;" onclick="selectLocation('Library')">
+                        <div class="building-icon" style="color: var(--bay-blue);">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="building-name">Library</div>
+                    </div>
+                    
+                    <div class="map-building-full" style="top: 25%; left: 80%; animation-delay: 0.3s;" onclick="selectLocation('Science Lab')">
+                        <div class="building-icon" style="color: var(--bay-green);">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <div class="building-name">Science Lab</div>
+                    </div>
+                    
+                    <div class="map-building-full" style="top: 60%; left: 25%; animation-delay: 0.4s;" onclick="selectLocation('Cafeteria')">
+                        <div class="building-icon" style="color: var(--bay-orange);">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="building-name">Cafeteria</div>
+                    </div>
+                    
+                    <div class="map-building-full" style="top: 60%; left: 60%; animation-delay: 0.5s;" onclick="selectLocation('RGO Office')">
+                        <div class="building-icon" style="color: var(--bay-red-primary);">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="building-name">RGO Office</div>
+                    </div>
+                    
+                    <div class="map-building-full" style="top: 55%; left: 85%; animation-delay: 0.6s;" onclick="selectLocation('Gymnasium')">
+                        <div class="building-icon" style="color: var(--bay-red-dark);">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <div class="building-name">Gymnasium</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="map-sidebar">
+            <!-- Search -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <i class="fas fa-search-location"></i> Quick Find
+                </div>
+                <div class="sidebar-card-body">
+                    <input type="text" class="search-input" placeholder="Search for location..." id="locationSearch" onkeyup="filterLocations()">
+                </div>
+            </div>
+            
+            <!-- Locations List -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <i class="fas fa-map-pin"></i> Campus Locations
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="location-list" id="locationList">
+                        <div class="location-item" onclick="selectLocation('Main Building')" data-name="main building">
+                            <div class="location-icon" style="color: var(--bay-red-primary);">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="location-name">Main Building</div>
+                        </div>
+                        <div class="location-item" onclick="selectLocation('Library')" data-name="library">
+                            <div class="location-icon" style="color: var(--bay-blue);">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="location-name">Library</div>
+                        </div>
+                        <div class="location-item" onclick="selectLocation('Science Lab')" data-name="science lab laboratory">
+                            <div class="location-icon" style="color: var(--bay-green);">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <div class="location-name">Science Lab</div>
+                        </div>
+                        <div class="location-item" onclick="selectLocation('Cafeteria')" data-name="cafeteria food dining">
+                            <div class="location-icon" style="color: var(--bay-orange);">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="location-name">Cafeteria</div>
+                        </div>
+                        <div class="location-item" onclick="selectLocation('RGO Office')" data-name="rgo office resource">
+                            <div class="location-icon" style="color: var(--bay-red-primary);">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="location-name">RGO Office</div>
+                        </div>
+                        <div class="location-item" onclick="selectLocation('Gymnasium')" data-name="gymnasium gym sports">
+                            <div class="location-icon" style="color: var(--bay-red-dark);">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="location-name">Gymnasium</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map Layers -->
+            <div class="sidebar-card">
+                <div class="sidebar-card-header">
+                    <i class="fas fa-layer-group"></i> Map Layers
+                </div>
+                <div class="sidebar-card-body">
+                    <div class="layer-option">
+                        <input type="checkbox" id="buildingsLayer" class="layer-checkbox" checked>
+                        <label for="buildingsLayer" class="layer-label">Buildings</label>
+                    </div>
+                    <div class="layer-option">
+                        <input type="checkbox" id="pathwaysLayer" class="layer-checkbox" checked>
+                        <label for="pathwaysLayer" class="layer-label">Pathways</label>
+                    </div>
+                    <div class="layer-option">
+                        <input type="checkbox" id="parkingLayer" class="layer-checkbox">
+                        <label for="parkingLayer" class="layer-label">Parking Areas</label>
+                    </div>
+                    <div class="layer-option">
+                        <input type="checkbox" id="greenSpacesLayer" class="layer-checkbox">
+                        <label for="greenSpacesLayer" class="layer-label">Green Spaces</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Map control functions
+function resetMapView() {
+    console.log('Resetting map view...');
+    // Future: Reset 3D map camera to default position
+    alert('Map view reset to default');
+}
+
+function toggleFullscreen() {
+    const mapContainer = document.querySelector('.map-main');
+    
+    if (!document.fullscreenElement) {
+        mapContainer.requestFullscreen().catch(err => {
+            alert(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+function selectLocation(locationName) {
+    console.log('Selected location:', locationName);
+    alert(`📍 ${locationName}\n\nShowing information and navigation details...`);
+    // Future: Highlight location on map and show details panel
+}
+
+// Search filter
+function filterLocations() {
+    const searchTerm = document.getElementById('locationSearch').value.toLowerCase();
+    const locationItems = document.querySelectorAll('.location-item');
+    
+    locationItems.forEach(item => {
+        const locationData = item.getAttribute('data-name').toLowerCase();
+        if (locationData.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Animate float effect for main icon
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

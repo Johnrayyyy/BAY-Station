@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}LostLink Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-box-open text-danger"></i> LostLink Dashboard</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('lostlink.report_item') }}" class="btn btn-kiosk">Report Item</a>
+            <a href="{{ url_for('lostlink.logout') }}" class="btn btn-outline-danger">Logout</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header kiosk-header text-white">Reported Items</div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>ID</th><th>Item</th><th>Place</th><th>Description</th><th>Photo</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>#{{ report.id }}</td>
+                        <td>{{ report.item }}</td>
+                        <td>{{ report.place }}</td>
+                        <td>{{ report.description }}</td>
+                        <td>
+                            {% if report.photo %}
+                            <a target="_blank" href="{{ url_for('static', filename='uploads/' + report.photo) }}">View</a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td><a class="btn btn-sm btn-outline-danger" href="{{ url_for('lostlink.update', item_id=report.id) }}">Edit</a></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No reports yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,890 @@
+{% extends "base.html" %}
+
+{% block title %}BAY-Station - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kiosk-container {
+        display: flex;
+        height: calc(100vh - 240px);
+        padding: 0 0 45px 0;
+        background: transparent;
+        position: relative;
+    }
+    
+    /* 3D Map Section - Left Side (70%) */
+    .map-section {
+        flex: 0 0 70%;
+        position: relative;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 2px solid rgba(220, 20, 60, 0.2);
+        border-radius: var(--bay-border-radius-lg);
+        overflow: hidden;
+        box-shadow: 0 12px 48px rgba(220, 20, 60, 0.15), 0 0 80px rgba(220, 20, 60, 0.05);
+        margin: 0 0.75rem 1rem 3rem;
+    }
+    
+    .map-header {
+        background: linear-gradient(135deg, var(--bay-red-primary) 0%, rgba(220, 20, 60, 0.85) 100%);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        color: var(--bay-white);
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: var(--bay-border-radius-lg) var(--bay-border-radius-lg) 0 0;
+        box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3), inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .map-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        animation: shimmer 4s infinite;
+    }
+    
+    .map-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .map-title i {
+        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.3));
+    }
+    
+    .map-controls {
+        display: flex;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .map-control-btn {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        color: var(--bay-red-primary);
+        padding: 0.65rem 1.25rem;
+        border-radius: var(--bay-border-radius);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .map-control-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--bay-red-primary), rgba(220, 20, 60, 0.5));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+    
+    .map-control-btn:hover {
+        background: rgba(255, 255, 255, 0.98);
+        color: var(--bay-red-primary);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 32px rgba(220, 20, 60, 0.3), 0 0 20px rgba(220, 20, 60, 0.15);
+        border-color: var(--bay-red-primary);
+    }
+    
+    .map-control-btn:hover::before {
+        transform: scaleX(1);
+    }
+    
+    #campus-map-3d {
+        width: 100%;
+        height: calc(100% - 80px);
+        position: relative;
+        background: linear-gradient(135deg, 
+            rgba(245, 247, 250, 0.6) 0%, 
+            rgba(230, 235, 245, 0.6) 50%, 
+            rgba(220, 230, 245, 0.6) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 0 0 var(--bay-border-radius-lg) var(--bay-border-radius-lg);
+    }
+    
+    .map-placeholder {
+        text-align: center;
+        color: var(--bay-gray);
+        animation: fadeIn 1s ease-in;
+    }
+    
+    .map-placeholder-icon {
+        font-size: 8rem;
+        color: var(--bay-red-light);
+        opacity: 0.3;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .map-building {
+        position: absolute;
+        background: var(--glass-white-strong);
+        backdrop-filter: blur(15px) saturate(180%);
+        -webkit-backdrop-filter: blur(15px) saturate(180%);
+        border-radius: var(--bay-border-radius);
+        box-shadow: var(--glass-shadow);
+        padding: 1rem;
+        cursor: pointer;
+        transition: var(--bay-transition);
+        animation: buildingAppear 0.6s ease-out backwards;
+        border: 2px solid var(--glass-border);
+    }
+    
+    @keyframes buildingAppear {
+        from {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .map-building:hover {
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 12px 32px rgba(220, 20, 60, 0.3);
+        background: var(--glass-white-strong);
+        border-color: var(--bay-red-primary);
+    }
+    
+    /* Sidebar - Right Side (30%) */
+    .sidebar-section {
+        flex: 0 0 30%;
+        display: flex;
+        flex-direction: column;
+        background: transparent;
+        overflow-y: auto;
+        padding: 0 3rem 2rem 0.75rem;
+        height: 100%;
+    }
+    
+    .stats-container {
+        padding: 0 1rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background: transparent;
+    }
+    
+    .stat-card {
+        background: var(--glass-white);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        padding: 1.25rem;
+        border-radius: var(--bay-border-radius-lg);
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 2px solid var(--glass-border);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--bay-red-primary), rgba(220, 20, 60, 0.5));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    /* Color-coded cards */
+    .stat-card:nth-child(1) {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(255, 255, 255, 0.88) 50%);
+        border-color: rgba(220, 20, 60, 0.3);
+    }
+    
+    .stat-card:nth-child(2) {
+        background: linear-gradient(135deg, rgba(255, 135, 0, 0.08) 0%, rgba(255, 255, 255, 0.88) 50%);
+        border-color: rgba(255, 135, 0, 0.3);
+    }
+    
+    .stat-card:nth-child(3) {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(255, 255, 255, 0.88) 50%);
+        border-color: rgba(220, 20, 60, 0.3);
+    }
+    
+    .stat-card:nth-child(4) {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.08) 0%, rgba(255, 255, 255, 0.88) 50%);
+        border-color: rgba(156, 39, 176, 0.3);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 20px 60px rgba(220, 20, 60, 0.3);
+        border-width: 3px;
+    }
+    
+    .stat-card:nth-child(1):hover {
+        box-shadow: 0 20px 60px rgba(220, 20, 60, 0.35);
+        border-color: var(--bay-red-primary);
+    }
+    
+    .stat-card:nth-child(2):hover {
+        box-shadow: 0 20px 60px rgba(255, 135, 0, 0.35);
+        border-color: #FF8700;
+    }
+    
+    .stat-card:nth-child(3):hover {
+        box-shadow: 0 20px 60px rgba(220, 20, 60, 0.35);
+        border-color: var(--bay-red-primary);
+    }
+    
+    .stat-card:nth-child(4):hover {
+        box-shadow: 0 20px 60px rgba(156, 39, 176, 0.35);
+        border-color: #9C27B0;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        width: 60px;
+        height: 60px;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        animation: iconPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes iconPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .stat-card:nth-child(1) .stat-icon {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(220, 20, 60, 0.05));
+        color: var(--bay-red-primary);
+        box-shadow: 0 4px 20px rgba(220, 20, 60, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    }
+    
+    .stat-card:nth-child(2) .stat-icon {
+        background: linear-gradient(135deg, rgba(255, 135, 0, 0.15), rgba(255, 135, 0, 0.05));
+        color: #FF8700;
+        box-shadow: 0 4px 20px rgba(255, 135, 0, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    }
+    
+    .stat-card:nth-child(3) .stat-icon {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.15), rgba(220, 20, 60, 0.05));
+        color: var(--bay-red-primary);
+        box-shadow: 0 4px 20px rgba(220, 20, 60, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    }
+    
+    .stat-card:nth-child(4) .stat-icon {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.15), rgba(156, 39, 176, 0.05));
+        color: #9C27B0;
+        box-shadow: 0 4px 20px rgba(156, 39, 176, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
+        animation: none;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--bay-gray-dark);
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--bay-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 0.25rem;
+        font-weight: 600;
+    }
+    
+    .modules-container {
+        padding: 0 1rem;
+        margin-top: 1.5rem;
+        background: transparent;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--bay-red-primary);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(255, 255, 255, 0.5) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: var(--bay-border-radius);
+        border-left: 4px solid var(--bay-red-primary);
+        box-shadow: 0 4px 16px rgba(220, 20, 60, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-title i {
+        font-size: 1.1rem;
+        filter: drop-shadow(0 2px 4px rgba(220, 20, 60, 0.2));
+    }
+    
+    .module-btn {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 2px solid rgba(220, 20, 60, 0.15);
+        border-radius: var(--bay-border-radius-lg);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 20px rgba(31, 38, 135, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--bay-red-primary), rgba(220, 20, 60, 0.5));
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .module-btn:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .module-btn:hover {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.95), rgba(220, 20, 60, 0.85));
+        border-color: transparent;
+        border-width: 3px;
+        transform: translateX(12px);
+        box-shadow: -8px 8px 32px rgba(220, 20, 60, 0.35), 0 8px 20px rgba(31, 38, 135, 0.15);
+    }
+    
+    .module-btn:hover .module-btn-icon,
+    .module-btn:hover .module-btn-content {
+        color: var(--bay-white);
+    }
+    
+    .module-btn-icon {
+        font-size: 2.5rem;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), rgba(220, 20, 60, 0.05));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--bay-red-primary);
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        box-shadow: 0 4px 16px rgba(220, 20, 60, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+        position: relative;
+    }
+    
+    .module-btn-icon::after {
+        content: '';
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--bay-red-primary), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+        filter: blur(15px);
+    }
+    
+    .module-btn:hover .module-btn-icon {
+        transform: scale(1.15) rotate(10deg);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+        color: white;
+        box-shadow: 0 6px 24px rgba(255, 255, 255, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    }
+    
+    .module-btn:hover .module-btn-icon::after {
+        opacity: 0.4;
+    }
+    
+    .module-btn-content {
+        flex: 1;
+        color: var(--bay-gray-dark);
+        transition: var(--bay-transition);
+    }
+    
+    .module-btn-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .module-btn-desc {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+    
+    .quick-info {
+        padding: 1.5rem;
+        background: var(--glass-white);
+        backdrop-filter: blur(15px) saturate(180%);
+        -webkit-backdrop-filter: blur(15px) saturate(180%);
+        margin: 1rem 1rem 0 1rem;
+        border-radius: var(--bay-border-radius-lg);
+        box-shadow: var(--glass-shadow);
+        border: 2px solid var(--glass-border);
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--bay-gray-light);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-icon {
+        color: var(--bay-red-primary);
+        font-size: 1.2rem;
+    }
+    
+    .info-text {
+        flex: 1;
+        font-size: 0.9rem;
+        color: var(--bay-gray-dark);
+    }
+    
+    /* Bottom Module Bar - Always Visible for Touchscreen */
+    .bottom-module-bar {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--glass-white-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        box-shadow: 0 8px 32px rgba(220, 20, 60, 0.2), 0 0 80px rgba(220, 20, 60, 0.08);
+        padding: 0.65rem 1.5rem;
+        z-index: 100;
+        border: 2px solid var(--glass-border);
+        border-radius: var(--bay-border-radius-lg);
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        gap: 0.75rem;
+        width: calc(100% - 48px);
+        max-width: 1600px;
+    }
+    
+    .bottom-module-btn {
+        flex: 1 1 0;
+        min-width: 100px;
+        max-width: 160px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.88) 100%);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 3px solid rgba(220, 20, 60, 0.25);
+        border-radius: var(--bay-border-radius);
+        padding: 0.65rem 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-decoration: none;
+        color: var(--bay-gray-dark);
+        box-shadow: 0 4px 16px rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bottom-module-btn::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--bay-red-primary), rgba(220, 20, 60, 0.5));
+        transform: scaleX(0);
+        transition: transform 0.35s ease;
+    }
+    
+    .bottom-module-btn:hover::before,
+    .bottom-module-btn:active::before {
+        transform: scaleX(1);
+    }
+    
+    .bottom-module-btn:hover,
+    .bottom-module-btn:active {
+        background: linear-gradient(135deg, rgba(220, 20, 60, 0.95), rgba(220, 20, 60, 0.85));
+        border-color: rgba(220, 20, 60, 0.8);
+        border-width: 3px;
+        transform: translateY(-6px) scale(1.05);
+        color: var(--bay-white);
+        box-shadow: 0 12px 40px rgba(220, 20, 60, 0.4), 0 0 20px rgba(220, 20, 60, 0.2);
+    }
+    
+    .bottom-module-btn:hover .bottom-icon,
+    .bottom-module-btn:active .bottom-icon {
+        color: var(--bay-white);
+    }
+    
+    .bottom-icon {
+        font-size: 1.75rem;
+        color: var(--bay-red-primary);
+        margin-bottom: 0.35rem;
+        transition: var(--bay-transition);
+    }
+    
+    .bottom-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    @media (max-width: 1024px) {
+        .kiosk-container {
+            flex-direction: column;
+            height: auto;
+            padding-bottom: 110px;
+        }
+        
+        .map-section {
+            flex: 0 0 50vh;
+            border-right: none;
+            border-bottom: 3px solid rgba(220, 20, 60, 0.1);
+            margin: 0 1rem 1rem 1rem;
+        }
+        
+        .sidebar-section {
+            flex: 1;
+            padding: 0 1rem 1rem 1rem;
+        }
+        
+        .stats-container {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .bottom-module-bar {
+            padding: 0.5rem 1rem;
+            gap: 0.5rem;
+            width: calc(100% - 32px);
+        }
+        
+        .bottom-module-btn {
+            min-width: 80px;
+            padding: 0.5rem 0.5rem;
+        }
+        
+        .module-btn-icon {
+            font-size: 1.5rem;
+        }
+        
+        .module-btn-title {
+            font-size: 0.75rem;
+        }
+        
+        .bottom-module-bar {
+            padding: 0.9rem 1rem;
+            gap: 0.75rem;
+            width: calc(100% - 32px);
+        }
+        
+        .bottom-module-btn {
+            min-width: 90px;
+            max-width: 140px;
+            padding: 0.85rem 0.65rem;
+        }
+        
+        .bottom-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .bottom-label {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kiosk-container">
+    <!-- 3D Map Section -->
+    <div class="map-section">
+        <div class="map-header">
+            <div class="map-title">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Campus Navigation</span>
+            </div>
+            <div class="map-controls">
+                <button class="map-control-btn" onclick="resetMapView()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button class="map-control-btn" onclick="toggleFullMap()">
+                    <i class="fas fa-expand"></i> Fullscreen
+                </button>
+            </div>
+        </div>
+        <div id="campus-map-3d">
+            <div class="map-placeholder">
+                <div class="map-placeholder-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h3 style="color: var(--bay-gray-dark); font-weight: 700;">BSU Lipa Campus</h3>
+                <p style="color: var(--bay-gray);">Interactive 3D Map - Touch locations to explore</p>
+                
+                <!-- Sample Building Markers -->
+                <div class="map-building hover:scale-110 transition-all duration-300" style="top: 30%; left: 20%; animation-delay: 0.1s;" onclick="showBuildingInfo('Main Building')">
+                    <i class="fas fa-building" style="color: var(--bay-red-primary); font-size: 2rem;"></i>
+                    <div style="font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem;">Main Building</div>
+                </div>
+                <div class="map-building hover:scale-110 transition-all duration-300" style="top: 40%; left: 60%; animation-delay: 0.2s;" onclick="showBuildingInfo('Library')">
+                    <i class="fas fa-book" style="color: var(--bay-blue); font-size: 2rem;"></i>
+                    <div style="font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem;">Library</div>
+                </div>
+                <div class="map-building hover:scale-110 transition-all duration-300" style="top: 60%; left: 35%; animation-delay: 0.3s;" onclick="showBuildingInfo('RGO Office')">
+                    <i class="fas fa-store" style="color: var(--bay-green); font-size: 2rem;"></i>
+                    <div style="font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem;">RGO</div>
+                </div>
+                <div class="map-building hover:scale-110 transition-all duration-300" style="top: 50%; left: 75%; animation-delay: 0.4s;" onclick="showBuildingInfo('Gymnasium')">
+                    <i class="fas fa-dumbbell" style="color: var(--bay-orange); font-size: 2rem;"></i>
+                    <div style="font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem;">Gym</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Section -->
+    <div class="sidebar-section">
+        <!-- Statistics -->
+        <div class="stats-container">
+            <div class="stat-card hover:shadow-xl transition-all duration-300 cursor-pointer">
+                <div class="stat-icon"><i class="fas fa-search"></i></div>
+                <div class="stat-value" id="lostItems">--</div>
+                <div class="stat-label">Lost Items</div>
+            </div>
+            <div class="stat-card hover:shadow-xl transition-all duration-300 cursor-pointer">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-value" id="rgoRequests">--</div>
+                <div class="stat-label">RGO Orders</div>
+            </div>
+            <div class="stat-card hover:shadow-xl transition-all duration-300 cursor-pointer">
+                <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
+                <div class="stat-value" id="grievances">--</div>
+                <div class="stat-label">Concerns</div>
+            </div>
+            <div class="stat-card hover:shadow-xl transition-all duration-300 cursor-pointer">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value" id="totalUsers">--</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+        
+        <!-- Module Buttons -->
+        <div class="modules-container">
+            <div class="section-title"><i class="fas fa-th"></i> Quick Access</div>
+            
+            <a href="/lostlink/app" class="module-btn">
+                <div class="module-btn-icon">
+                    <i class="fas fa-search-location"></i>
+                </div>
+                <div class="module-btn-content">
+                    <div class="module-btn-title">LostLink</div>
+                    <div class="module-btn-desc">Lost & Found System</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            
+            <a href="/rgo/app" class="module-btn">
+                <div class="module-btn-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="module-btn-content">
+                    <div class="module-btn-title">RGO System</div>
+                    <div class="module-btn-desc">Resource Orders</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            
+            <a href="/grievance/app" class="module-btn">
+                <div class="module-btn-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="module-btn-content">
+                    <div class="module-btn-title">Grievance</div>
+                    <div class="module-btn-desc">Submit Concerns</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            
+            <a href="/calendar" class="module-btn">
+                <div class="module-btn-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="module-btn-content">
+                    <div class="module-btn-title">Calendar</div>
+                    <div class="module-btn-desc">Events & Schedule</div>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+        <!-- Quick Info -->
+        <div class="quick-info">
+            <div class="section-title"><i class="fas fa-info-circle"></i> Information</div>
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-clock"></i></div>
+                <div class="info-text">Kiosk Hours: 24/7</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-phone"></i></div>
+                <div class="info-text">Support: (043) 123-4567</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                <div class="info-text">bay-station@bsu.edu.ph</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation Bar -->
+<div class="bottom-module-bar">
+    <a href="/" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-home"></i></div>
+        <div class="bottom-label">Home</div>
+    </a>
+    <a href="/map" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-map"></i></div>
+        <div class="bottom-label">Full Map</div>
+    </a>
+    <a href="/calendar" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-calendar"></i></div>
+        <div class="bottom-label">Calendar</div>
+    </a>
+    <a href="/lostlink/app" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-search"></i></div>
+        <div class="bottom-label">LostLink</div>
+    </a>
+    <a href="/rgo/app" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-store"></i></div>
+        <div class="bottom-label">RGO</div>
+    </a>
+    <a href="/grievance/app" class="bottom-module-btn hover:scale-105 transition-transform duration-300">
+        <div class="bottom-icon"><i class="fas fa-comment"></i></div>
+        <div class="bottom-label">Grievance</div>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fetch and display statistics
+fetch('/api/stats')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('lostItems').textContent = data.lostItems;
+        document.getElementById('rgoRequests').textContent = data.rgoRequests;
+        document.getElementById('grievances').textContent = data.grievances;
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+    })
+    .catch(err => {
+        console.error('Error fetching stats:', err);
+        // Fallback values
+        document.getElementById('lostItems').textContent = '127';
+        document.getElementById('rgoRequests').textContent = '93';
+        document.getElementById('grievances').textContent = '38';
+        document.getElementById('totalUsers').textContent = '1542';
+    });
+
+// Map control functions
+function resetMapView() {
+    console.log('Resetting map view...');
+    // Future: Reset 3D map camera position
+}
+
+function toggleFullMap() {
+    window.location.href = '/map';
+}
+
+function showBuildingInfo(building) {
+    alert(`📍 ${building}\n\nClick to view detailed information and directions.`);
+    // Future: Show building details modal
+}
+
+// Add subtle animation to stat cards
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.animation = 'fadeIn 0.5s ease-out';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

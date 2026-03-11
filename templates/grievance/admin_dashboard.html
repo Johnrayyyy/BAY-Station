@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Grievance{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-clipboard-list"></i> Admin Dashboard</h1>
+        <div>
+            <a href="{{ url_for('grievance.add_admin') }}" class="btn btn-info me-2">+ Add Admin</a>
+            <a href="{{ url_for('grievance.admin_logout') }}" class="btn btn-outline-danger">Logout</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Admins</h5>
+                    <h2 class="mb-0">{{ all_admins|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">Pending Concerns</h5>
+                    <h2 class="mb-0">{{ pending|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-info">In Progress</h5>
+                    <h2 class="mb-0">{{ in_progress|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Resolved Concerns</h5>
+                    <h2 class="mb-0">{{ resolved|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Concerns -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Pending Concerns ({{ pending|length }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pending %}
+                        {% for concern in pending %}
+                        <tr>
+                            <td><strong>#{{ concern.id }}</strong></td>
+                            <td>{{ concern.student_name }}</td>
+                            <td>{{ concern.subject }}</td>
+                            <td><span class="badge bg-light text-dark">{{ concern.category }}</span></td>
+                            <td><span class="badge bg-{{ 'danger' if concern.priority == 'high' else 'warning' if concern.priority == 'normal' else 'info' }}">{{ concern.priority|capitalize }}</span></td>
+                            <td>{{ concern.created_at.strftime('%m/%d/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('grievance.manage_concern', concern_id=concern.id) }}" class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">No pending concerns</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- In Progress Concerns -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">In Progress Concerns ({{ in_progress|length }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if in_progress %}
+                        {% for concern in in_progress %}
+                        <tr>
+                            <td><strong>#{{ concern.id }}</strong></td>
+                            <td>{{ concern.student_name }}</td>
+                            <td>{{ concern.subject }}</td>
+                            <td><span class="badge bg-light text-dark">{{ concern.category }}</span></td>
+                            <td><span class="badge bg-{{ 'danger' if concern.priority == 'high' else 'warning' if concern.priority == 'normal' else 'info' }}">{{ concern.priority|capitalize }}</span></td>
+                            <td>{{ concern.created_at.strftime('%m/%d/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('grievance.manage_concern', concern_id=concern.id) }}" class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">No in progress concerns</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Resolved Concerns -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Resolved Concerns ({{ resolved|length }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Resolved Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if resolved %}
+                        {% for concern in resolved %}
+                        <tr>
+                            <td><strong>#{{ concern.id }}</strong></td>
+                            <td>{{ concern.student_name }}</td>
+                            <td>{{ concern.subject }}</td>
+                            <td><span class="badge bg-light text-dark">{{ concern.category }}</span></td>
+                            <td>{{ concern.resolved_at.strftime('%m/%d/%Y') if concern.resolved_at else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No resolved concerns</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Admin Management -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">System Admins</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in all_admins %}
+                    <tr>
+                        <td>{{ admin.username }}</td>
+                        <td>{{ admin.full_name }}</td>
+                        <td>{{ admin.email }}</td>
+                        <td>{{ admin.created_at.strftime('%m/%d/%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

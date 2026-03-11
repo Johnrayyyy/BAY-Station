@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Process Return{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header kiosk-header text-white">Process Returned Item</div>
+                <div class="card-body p-4">
+                    <p><strong>Item:</strong> {{ report.item }} | <strong>Place:</strong> {{ report.place }}</p>
+                    <form method="post" enctype="multipart/form-data" action="{{ url_for('lostlink.returning', item_id=report.id) }}" class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Place Found</label><input name="place_found" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Claimed By</label><input name="claimed_by" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Contact</label><input name="contact" class="form-control" required></div>
+                        <div class="col-12"><label class="form-label">Description</label><textarea name="description" rows="3" class="form-control" required></textarea></div>
+                        <div class="col-12"><label class="form-label">Photo</label><input name="photo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.gif" required></div>
+                        <div class="col-12 d-flex gap-2">
+                            <button class="btn btn-kiosk" type="submit">Mark as Returned</button>
+                            <a href="{{ url_for('lostlink.admin') }}" class="btn btn-outline-danger">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

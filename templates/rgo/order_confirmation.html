@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>
+                    </div>
+                    
+                    <h3 class="mb-2">Order Placed Successfully!</h3>
+                    <p class="text-muted small mb-3">Thank you for your order. Please save your reference number.</p>
+                    
+                    <div class="bg-light border rounded p-3 mb-3">
+                        <small class="text-muted d-block mb-1">Your Reference Number</small>
+                        <h3 class="text-danger fw-bold mb-0">
+                            <code style="font-size: 1.3rem; background: transparent; color: #dc3545;">{{ reference_no }}</code>
+                        </h3>
+                    </div>
+                    
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2"><i class="fas fa-box me-1"></i> Order Details</h6>
+                            <div class="row text-start small">
+                                <div class="col-5"><strong>Order ID:</strong></div>
+                                <div class="col-7">#{{ order.id }}</div>
+                                
+                                <div class="col-5"><strong>Product:</strong></div>
+                                <div class="col-7">{{ product.name }}</div>
+                                
+                                <div class="col-5"><strong>Quantity:</strong></div>
+                                <div class="col-7">{{ quantity }}</div>
+                                
+                                <div class="col-5"><strong>Total:</strong></div>
+                                <div class="col-7"><strong class="text-danger">PHP {{ order.total_amount }}</strong></div>
+                                
+                                <div class="col-5"><strong>Payment:</strong></div>
+                                <div class="col-7">{{ payment_method }}</div>
+                                
+                                <div class="col-5"><strong>Status:</strong></div>
+                                <div class="col-7"><span class="badge text-bg-warning">{{ order.status }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info py-2 mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <small>Please proceed to the RGO office to complete payment and claim your order.</small>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('rgo.my_orders') }}" class="btn btn-danger flex-fill">
+                            <i class="fas fa-receipt me-1"></i>My Orders
+                        </a>
+                        <a href="{{ url_for('rgo.home') }}" class="btn btn-outline-secondary flex-fill">
+                            <i class="fas fa-home me-1"></i>RGO Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

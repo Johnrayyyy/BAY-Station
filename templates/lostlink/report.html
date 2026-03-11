@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header kiosk-header text-white">Report Lost Item</div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" action="{{ url_for('lostlink.report_item') }}" class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Item</label><input name="item" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Place Last Seen</label><input name="place" class="form-control" required></div>
+                        <div class="col-12"><label class="form-label">Description</label><textarea name="description" rows="4" class="form-control" required></textarea></div>
+                        <div class="col-12"><label class="form-label">Photo</label><input name="photo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.gif" required></div>
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-kiosk">Submit Report</button>
+                            <a href="{{ url_for('lostlink.dashboard') }}" class="btn btn-outline-danger">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

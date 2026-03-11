@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Place Order{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header kiosk-header text-white">
+                    <h4 class="mb-0"><i class="fas fa-shopping-cart"></i> Order Product</h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Product Image and Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            {% if product.image_path %}
+                            <img src="{{ url_for('static', filename=product.image_path) }}" 
+                                 alt="{{ product.name }}" 
+                                 class="img-fluid rounded shadow-sm"
+                                 style="max-height: 250px; object-fit: cover; width: 100%;">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 250px;">
+                                <div class="text-center">
+                                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No image available</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="text-danger"><i class="fas fa-box"></i> {{ product.name }}</h5>
+                            <p class="text-muted">{{ product.description or 'No description provided.' }}</p>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1 text-muted small"><i class="fas fa-tag"></i> <strong>Price</strong></p>
+                                    <h4 class="text-danger mb-0">PHP {{ product.price }}</h4>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <p class="mb-1 text-muted small"><i class="fas fa-warehouse"></i> <strong>Available Stock</strong></p>
+                                    <h4 class="text-success mb-0">{{ product.stock_quantity }} units</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <form method="post" action="{{ url_for('rgo.order_product', product_id=product.id) }}" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="quantity" min="1" max="{{ product.stock_quantity }}" class="form-control" value="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-select" name="payment_method">
+                                <option value="Cash">Cash</option>
+                                <option value="GCash">GCash</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-2">
+                            <button class="btn btn-kiosk" type="submit">Place Order</button>
+                            <a href="{{ url_for('rgo.home') }}" class="btn btn-outline-danger">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

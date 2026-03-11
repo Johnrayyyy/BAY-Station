@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BAY-Station - BSU Assistance Youth Station{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'bay-red': '#DC143C',
+              'bay-red-light': '#FF6B6B',
+              'bay-red-dark': '#B91C2E',
+            }
+          }
+        }
+      }
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="kiosk-navbar">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center">
+                    <a class="navbar-brand-kiosk" href="/">
+                        <!-- Replace 'bay-station-logo.png' with your actual logo filename -->
+                        <img src="{{ url_for('static', filename='images/bay-station-logo.png') }}" 
+                             alt="BAY-Station Logo" 
+                             class="brand-logo-img">
+                        <div class="brand-text">
+                            <span class="brand-name">BAY-Station</span>
+                            <span class="brand-subtitle">BSU Assistance Youth Station</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- User Status -->
+                <div class="d-flex align-items-center">
+                    <div class="time-display me-4">
+                        <i class="far fa-clock"></i>
+                        <span id="currentTime"></span>
+                    </div>
+                    {% if user_status.is_logged_in %}
+                    <div class="user-badge">
+                        <i class="fas fa-user-circle"></i>
+                        <div class="user-info">
+                            <span class="user-name">{{ user_status.user_name }}</span>
+                            <span class="user-module">{{ user_status.user_module }}{% if user_status.is_admin %} Admin{% endif %}</span>
+                        </div>
+                    </div>
+                    <button onclick="performLogout(); return false;" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                    {% else %}
+                    <div class="guest-badge">
+                        <i class="fas fa-user"></i>
+                        <span>Guest Mode</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category if category != 'error' else 'danger' }}">
+                        <i class="fas fa-info-circle"></i>
+                        {{ message }}
+                        <button type="button" class="flash-close" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="kiosk-main">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Floating Action Buttons -->
+    <div class="floating-nav-buttons">
+        <a href="/" class="floating-btn floating-btn-home" title="Return to Home">
+            <i class="fas fa-home"></i>
+        </a>
+        <a href="/map" class="floating-btn floating-btn-map" title="Campus Map">
+            <i class="fas fa-map-marked-alt"></i>
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Global Scripts -->
+    <script>
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const clockElement = document.getElementById('currentTime');
+            if (clockElement) {
+                clockElement.textContent = timeString;
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Logout handler
+        function performLogout() {
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+            const userModule = '{{ user_status.user_module }}';
+            const isAdmin = {{ 'true' if user_status.is_admin else 'false' }};
+            
+            if (userModule === 'LostLink') {
+                window.location.href = isAdmin ? '/lostlink/admin/logout' : '/lostlink/app/logout';
+            } else if (userModule === 'RGO') {
+                window.location.href = isAdmin ? '/rgo/admin/logout' : '/rgo/app/logout';
+            } else if (userModule === 'Grievance') {
+                window.location.href = isAdmin ? '/grievance/app/admin-logout' : '/grievance/app/student-logout';
+            } else {
+                window.location.href = '/';
+            }
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
